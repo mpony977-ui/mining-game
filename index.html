@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>外鲸币矿机 Pro</title>
+    <style>
+        /* CSS 样式：负责让页面变好看 */
+        body {
+            background-color: #0d0d0d;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* 禁止滚动 */
+            user-select: none; /* 禁止选中文字 */
+        }
+
+        /* 顶部数据栏 */
+        .header {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .balance-container {
+            display: flex;
+            align-items: center;
+            font-size: 40px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #f39c12;
+        }
+
+        .coin-icon { width: 40px; height: 40px; margin-right: 10px; }
+
+        /* 中间的大金币 */
+        .game-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .big-coin {
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, #f1c40f 0%, #b7950b 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(241, 196, 15, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 80px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            position: relative;
+            z-index: 10;
+        }
+
+        .big-coin:active {
+            transform: scale(0.95); /* 点击时的缩放效果 */
+        }
+
+        .big-coin::after {
+            content: "🐳";
+            font-size: 100px;
+        }
+
+        /* 飘字特效 */
+        .float-text {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-100px); }
+        }
+
+        /* 底部能量条 */
+        .footer {
+            width: 90%;
+            margin-bottom: 30px;
+        }
+
+        .energy-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #bdc3c7;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 15px;
+            background-color: #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #8e44ad);
+            width: 100%;
+            transition: width 0.2s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div style="font-size: 14px; color: #888;">我的资产</div>
+        <div class="balance-container">
+            <span>🐳</span>
+            <span id="score">0</span>
+        </div>
+    </div>
+
+    <div class="game-area">
+        <div class="big-coin" id="clickBtn"></div>
+    </div>
+
+    <div class="footer">
+        <div class="energy-info">
+            <span>⚡ 能量</span>
+            <span id="energyText">1000/1000</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="energyBar"></div>
+        </div>
+    </div>
+
+    <script>
+        // JS 逻辑：负责游戏的交互
+        let score = 0;
+        let energy = 1000;
+        const maxEnergy = 1000;
+        
+        const scoreEl = document.getElementById('score');
+        const energyTextEl = document.getElementById('energyText');
+        const energyBarEl = document.getElementById('energyBar');
+        const clickBtn = document.getElementById('clickBtn');
+
+        // 点击事件
+        clickBtn.addEventListener('click', (e) => {
+            // 检查能量
+            if (energy <= 0) return;
+
+            // 1. 增加分数
+            score += 1;
+            energy -= 10; // 每次点击消耗10能量
+            updateUI();
+
+            // 2. 生成飘字特效 (+1)
+            const rect = clickBtn.getBoundingClientRect();
+            // 计算点击位置相对于按钮中心的偏移
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            showFloatText(x, y);
+
+            // 3. 震动反馈 (手机上有效)
+            if (navigator.vibrate) navigator.vibrate(10);
+        });
+
+        // 生成飘动的 +1
+        function showFloatText(x, y) {
+            const el = document.createElement('div');
+            el.className = 'float-text';
+            el.innerText = '+1';
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.body.appendChild(el);
+
+            // 动画结束后删除元素
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        // 能量自动恢复系统
+        setInterval(() => {
+            if (energy < maxEnergy) {
+                energy += 5; // 每秒恢复5点
+                if (energy > maxEnergy) energy = maxEnergy;
+                updateUI();
+            }
+        }, 1000);
+
+        function updateUI() {
+            scoreEl.innerText = score.toLocaleString();
+            energyTextEl.innerText = `${energy}/${maxEnergy}`;
+            energyBarEl.style.width = (energy / maxEnergy * 100) + '%';
+        }
+    </script>
+</body>
+</html>
